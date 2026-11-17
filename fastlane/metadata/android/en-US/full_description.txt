@@ -1,0 +1,7 @@
+Pawn2Pawn is a chess game for two players on nearby Android phones. Devices connect directly over Wi-Fi Direct: no internet connection, no server, no account, no tracking.
+
+Features:
+• Find nearby players and invite them with a tap
+• Full chess rules: castling, en passant, promotion, check, checkmate and stalemate
+
+Requires a device with Wi-Fi Direct support. Android 9 or newer.
