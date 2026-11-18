@@ -35,6 +35,10 @@ import kotlin.random.Random
 /** Game terms: [pick] is the colour the sender wants ('w', 'b' or 'r' for random), clock is base seconds + increment seconds (base 0 = untimed). */
 data class Offer(val pick: Char, val base: Int, val inc: Int) {
     val clock get() = if (base == 0) "no clock" else "${base / 60}+$inc"
+
+    /** True if the opponent's [other] describes the same game: same clock, and opposite colours or both random. */
+    fun matches(other: Offer) = base == other.base && inc == other.inc &&
+        pick == when (other.pick) { 'w' -> 'b'; 'b' -> 'w'; else -> 'r' }
 }
 
 data class Record(val wins: Int = 0, val draws: Int = 0, val losses: Int = 0)
@@ -424,7 +428,10 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
         active.value = if (on) bt else wifi
     }
 
+    val draftMatchesReceived get() = received?.let(draft::matches) == true
+
     fun propose() {
+        if (draftMatchesReceived) return accept()
         sent = draft
         link.send("offer ${draft.pick} ${draft.base} ${draft.inc}")
     }

@@ -231,7 +231,7 @@ private fun Setup(vm: GameViewModel) {
         }
         Spacer(Modifier.height(4.dp))
         Box(Modifier.height(48.dp), Alignment.Center) {
-            if (vm.sent == draft) Label("proposed · waiting for opponent…", Subtext) else Button("propose", onClick = vm::propose)
+            if (vm.sent == draft) Label("proposed · waiting for opponent…", Subtext) else Button(if (vm.draftMatchesReceived) "accept" else "propose", onClick = vm::propose)
         }
         vm.received?.let {
             val colours = when (it.pick) {
