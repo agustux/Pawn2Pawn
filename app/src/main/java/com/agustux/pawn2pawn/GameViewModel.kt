@@ -1,7 +1,9 @@
 package com.agustux.pawn2pawn
 
 import android.app.Application
+import android.bluetooth.BluetoothManager
 import android.content.Context
+import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.SystemClock.elapsedRealtime
 import android.provider.Settings
@@ -53,7 +55,11 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
     private val prefs = app.getSharedPreferences("pawn2pawn", Context.MODE_PRIVATE)
     private val wifi = WfdLink(app)
     private val bt = BtLink(app)
-    var bluetooth by mutableStateOf(prefs.getBoolean("bluetooth", false))
+    /** Saved choice, else whichever radio is already on (Wi-Fi first). */
+    var bluetooth by mutableStateOf(
+        if (prefs.contains("bluetooth")) prefs.getBoolean("bluetooth", false)
+        else !wifiOn(app) && btOn(app),
+    )
         private set
     private val active = MutableStateFlow<Link>(if (bluetooth) bt else wifi)
     private val link get() = active.value
@@ -514,3 +520,9 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
 }
 
 private val Side.code get() = if (this == Side.WHITE) 'w' else 'b'
+
+private fun wifiOn(c: Context) =
+    runCatching { (c.getSystemService(Context.WIFI_SERVICE) as? WifiManager)?.isWifiEnabled == true }.getOrDefault(false)
+
+private fun btOn(c: Context) =
+    runCatching { (c.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager)?.adapter?.isEnabled == true }.getOrDefault(false)
