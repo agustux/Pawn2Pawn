@@ -1,10 +1,10 @@
 # Pawn2Pawn
 
-Android chess app built with Kotlin and Gradle.
+P2P Chess app for Android built with Kotlin and Gradle.
 
 ## Build
 
-Requires Android Studio (or the Android SDK) and a JDK.
+Requires Android SDK and JDK
 
 ```sh
 ./gradlew assembleDebug
@@ -12,4 +12,4 @@ Requires Android Studio (or the Android SDK) and a JDK.
 
 ## License
 
-MIT, see [LICENSE](LICENSE). Third-party assets are listed in [CREDITS.md](CREDITS.md).
+MIT, see [LICENSE](./LICENSE). Third-party assets are listed in [CREDITS.md](./CREDITS.md).

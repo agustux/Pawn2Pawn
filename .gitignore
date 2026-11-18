@@ -1,4 +1,6 @@
+app/build/
 build/
+chess/build/
 .gradle/
 .idea/
 *.iml
