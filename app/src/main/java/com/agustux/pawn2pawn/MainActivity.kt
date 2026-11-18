@@ -52,17 +52,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -383,11 +381,14 @@ private fun Board(pos: Position, flipped: Boolean, selected: Int?, targets: List
             if (square == selected) drawRect(Accent.copy(alpha = 0.65f), origin, cellSize)
             if (square == checked) drawRect(Red.copy(alpha = 0.7f), origin, cellSize)
             pos[square]?.let {
-                drawImage(
-                    images.getValue(it),
-    dstOffset = IntOffset((origin.x + cell * 0.1f).toInt(), (origin.y + cell * 0.1f).toInt()),
-                    dstSize = IntSize((cell * 0.8f).toInt(), (cell * 0.8f).toInt()),
-                )
+                val painter = images.getValue(it)
+                val box = cell * 0.8f
+                val scale = box / maxOf(painter.intrinsicSize.width, painter.intrinsicSize.height)
+                val w = painter.intrinsicSize.width * scale
+                val h = painter.intrinsicSize.height * scale
+                translate(origin.x + (cell - w) / 2, origin.y + (cell - h) / 2) {
+                    with(painter) { draw(Size(w, h)) }
+                }
             }
             if (square in targets) drawCircle(Base.copy(alpha = 0.45f), cell / 6, origin + Offset(cell / 2, cell / 2))
         }
@@ -395,9 +396,9 @@ private fun Board(pos: Position, flipped: Boolean, selected: Int?, targets: List
 }
 
 @Composable
-private fun pieceImages(): Map<Piece, ImageBitmap> {
+private fun pieceImages(): Map<Piece, Painter> {
     val pieces = Side.entries.flatMap { side -> Kind.entries.map { Piece(side, it) } }
-    return pieces.associateWith { ImageBitmap.imageResource(drawableOf(it)) }
+    return pieces.associateWith { painterResource(drawableOf(it)) }
 }
 
 private fun drawableOf(piece: Piece): Int = when (piece.kind) {

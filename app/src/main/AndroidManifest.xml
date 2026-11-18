@@ -29,7 +29,7 @@
 
     <application
         android:allowBackup="false"
-        android:icon="@drawable/wn"
+        android:icon="@mipmap/ic_launcher"
         android:label="Pawn2Pawn"
         android:theme="@style/Theme.Chess">
         <activity
