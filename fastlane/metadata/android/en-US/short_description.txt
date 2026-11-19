@@ -1,1 +1,1 @@
-Peer-to-peer chess over Wi-Fi Direct. No internet, no accounts.
+Peer-to-peer chess over Wi-Fi Direct or Bluetooth. No internet, no accounts.
