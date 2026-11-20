@@ -34,10 +34,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -54,11 +52,13 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -150,7 +150,6 @@ private fun App(vm: GameViewModel = viewModel()) {
             else -> {
                 val peers by vm.peers.collectAsState()
                 Lobby(if (peers.isEmpty()) "searching for nearby players…" else "tap a player to connect", Subtext) {
-                    NameField(vm.myName, vm::rename)
                     SystemName(vm)
                     vm.pausedGame?.let { Label("game vs $it paused\nconnect to them to resume", Subtext) }
                     peers.forEach { Button(it.name.ifBlank { it.address }) { vm.connect(it) } }
@@ -230,8 +229,8 @@ private fun Setup(vm: GameViewModel) {
             }
         }
         Spacer(Modifier.height(4.dp))
-        Box(Modifier.height(48.dp), Alignment.Center) {
-            if (vm.sent == draft) Label("proposed · waiting for opponent…", Subtext) else Button(if (vm.draftMatchesReceived) "accept" else "propose", onClick = vm::propose)
+        if (!vm.draftMatchesReceived) Box(Modifier.height(48.dp), Alignment.Center) {
+            if (vm.sent == draft) Label("proposed · waiting for opponent…", Subtext) else Button("propose", onClick = vm::propose)
         }
         vm.received?.let {
             val colours = when (it.pick) {
@@ -309,22 +308,6 @@ private fun Stats(vm: GameViewModel) {
     Label("$moves$clocks\nvs ${vm.opponentName}: ${r.wins}w ${r.draws}d ${r.losses}l", Overlay)
 }
 
-@Composable
-private fun NameField(name: String, onChange: (String) -> Unit) {
-    val shape = RoundedCornerShape(12.dp)
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        Label("you appear as", Overlay)
-        BasicTextField(
-            name,
-            onChange,
-            Modifier.border(1.dp, Surface, shape).padding(horizontal = 12.dp, vertical = 10.dp).widthIn(min = 80.dp, max = 200.dp),
-            textStyle = TextStyle(color = Accent, fontSize = 14.sp, fontFamily = FontFamily.Monospace),
-            singleLine = true,
-            cursorBrush = SolidColor(Accent),
-        )
-    }
-}
-
 /**
  * The invite dialog (Wi-Fi) or scan list (Bluetooth) uses a system name apps can't change. Wi-Fi Direct
  * has no public screen for it, but on most phones it follows the device name under "About phone".
@@ -333,14 +316,17 @@ private fun NameField(name: String, onChange: (String) -> Unit) {
 private fun SystemName(vm: GameViewModel) {
     val context = LocalContext.current
     val name by vm.systemName.collectAsState()
-    if (name.isBlank() || name == vm.myName.trim()) return
-    Label(
-        "${if (vm.bluetooth) "others see" else "invites show"} \"$name\" · change ›",
-        Overlay,
-        modifier = Modifier.clickable {
+    BasicText(
+        buildAnnotatedString {
+            append("you appear as ")
+            withStyle(SpanStyle(color = Text)) { append("\"${name.ifBlank { vm.myName }}\"") }
+            append(" · change ›")
+        },
+        Modifier.clickable {
             val about = Intent(if (vm.bluetooth) Settings.ACTION_BLUETOOTH_SETTINGS else Settings.ACTION_DEVICE_INFO_SETTINGS)
             runCatching { context.startActivity(about) }.onFailure { context.startActivity(Intent(Settings.ACTION_SETTINGS)) }
         }.padding(8.dp),
+        TextStyle(color = Overlay, fontSize = 14.sp, fontFamily = FontFamily.Monospace, textAlign = TextAlign.Center),
     )
 }
 

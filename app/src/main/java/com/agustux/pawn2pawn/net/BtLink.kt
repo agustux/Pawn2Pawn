@@ -148,8 +148,6 @@ class BtLink(context: Context) : Link {
         _peers.value = found.values.toList()
     }
 
-    /** The system Bluetooth name can't be set per app; the player name travels in the game's hello instead. */
-    override fun setName(name: String) {}
 
     @Synchronized
     override fun connect(peer: Peer) {

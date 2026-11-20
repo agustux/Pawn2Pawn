@@ -25,7 +25,6 @@ interface Link {
     val systemName: StateFlow<String>
     fun start()
     fun stop()
-    fun setName(name: String)
     fun connect(peer: Peer)
     /** The player confirmed the Verify code matches the other phone's. To reject, stop() or start(). */
     fun accept()

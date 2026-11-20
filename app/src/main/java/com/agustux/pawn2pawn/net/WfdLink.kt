@@ -64,7 +64,6 @@ class WfdLink(context: Context) : Link {
     @Volatile private var outgoing: Channel<String>? = null
     private var accepted = CompletableDeferred<Unit>()
     private var myAddress: String? = null
-    private var localName = ""
     private var devices = emptyList<WifiP2pDevice>()
     private val names = mutableMapOf<String, String>() // device address -> advertised player name
 
@@ -92,7 +91,10 @@ class WfdLink(context: Context) : Link {
                         }
                         // Without the location/nearby permission Android hides the real address behind this placeholder.
                         myAddress = me?.deviceAddress?.takeIf { it != "02:00:00:00:00:00" }
-                        me?.deviceName?.let { _systemName.value = it }
+                        me?.deviceName?.takeIf { it != _systemName.value }?.let {
+                            _systemName.value = it
+                            if (ready) advertise(m, ch)
+                        }
                     }
                     WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION ->
                         m.requestConnectionInfo(ch) { info -> if (info != null) onInfo(info) }
@@ -183,19 +185,10 @@ class WfdLink(context: Context) : Link {
         }
     }
 
-    /** The name other Pawn2Pawn players see in their list. Applied immediately if discovery is running. */
-    @Synchronized
-    override fun setName(name: String) {
-        localName = name
-        val m = manager ?: return
-        val ch = channel ?: return
-        if (ready) advertise(m, ch)
-    }
-
     private fun advertise(m: WifiP2pManager, ch: WifiP2pManager.Channel) {
         runCatching {
             m.clearLocalServices(ch, null)
-            val txt = mapOf(TXT_NAME to localName.take(30))
+            val txt = mapOf(TXT_NAME to _systemName.value.take(30))
             m.addLocalService(ch, WifiP2pDnsSdServiceInfo.newInstance("pawn2pawn", SERVICE_TYPE, txt), null)
         }
     }

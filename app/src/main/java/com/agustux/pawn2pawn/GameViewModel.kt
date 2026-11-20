@@ -23,7 +23,6 @@ import com.agustux.pawn2pawn.net.LinkState
 import com.agustux.pawn2pawn.net.WfdLink
 import com.agustux.pawn2pawn.net.Peer
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -72,15 +71,11 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
     val systemName = active.flatMapLatest { it.systemName }.stateIn(viewModelScope, SharingStarted.Eagerly, "")
     private var isHost = false
 
-    var myName by mutableStateOf(
-        prefs.getString("name", null)
-            ?: Settings.Global.getString(app.contentResolver, Settings.Global.DEVICE_NAME)
-            ?: Build.MODEL,
-    )
-        private set
+    /** The system name of the active radio; apps can't change it, so neither can the player here. */
+    private val deviceName = Settings.Global.getString(app.contentResolver, Settings.Global.DEVICE_NAME) ?: Build.MODEL
+    val myName get() = systemName.value.ifBlank { deviceName }
     var opponentName by mutableStateOf(prefs.getString("opponent", null) ?: "opponent")
         private set
-    private var renameJob: Job? = null
 
     /** Connected, but the other phone's hello hasn't arrived yet. */
     var syncing by mutableStateOf(false)
@@ -178,7 +173,6 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     init {
-        wifi.setName(myName)
         load()
         viewModelScope.launch {
             linkState.collect {
@@ -399,16 +393,6 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
 
     // ---- UI actions ----
 
-    fun rename(name: String) {
-        myName = name.replace('\n', ' ').take(30)
-        prefs.edit { putString("name", myName) }
-        renameJob?.cancel()
-        renameJob = viewModelScope.launch {
-            delay(800) // don't re-advertise on every keystroke
-            wifi.setName(myName.trim())
-        }
-    }
-
     fun search() {
         link.stop()
         link.start()
@@ -431,7 +415,6 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
     val draftMatchesReceived get() = received?.let(draft::matches) == true
 
     fun propose() {
-        if (draftMatchesReceived) return accept()
         sent = draft
         link.send("offer ${draft.pick} ${draft.base} ${draft.inc}")
     }
