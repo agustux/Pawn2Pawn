@@ -11,7 +11,7 @@ Requires Android SDK and JDK
 ```
 
 Screenshots:
-[Game](./fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg)
+![Game](./fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg)
 
 ## License
 
