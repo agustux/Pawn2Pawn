@@ -10,6 +10,9 @@ Requires Android SDK and JDK
 ./gradlew assembleDebug
 ```
 
+Screenshots:
+[Game](./fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg)
+
 ## License
 
 MIT, see [LICENSE](./LICENSE). Third-party assets are listed in [CREDITS.md](./CREDITS.md).
