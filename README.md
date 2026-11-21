@@ -10,7 +10,7 @@ Requires Android SDK and JDK
 ./gradlew assembleDebug
 ```
 
-Screenshots:
+### Screenshots:
 ![Game](./fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg)
 
 ## License
